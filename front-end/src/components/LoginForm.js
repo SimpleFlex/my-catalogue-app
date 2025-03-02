@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LoginForm = ({ onSwitchToRegister }) => {
   const [email, setEmail] = useState("");
@@ -7,7 +8,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
   const [error, setError] = useState(""); // For frontend validation
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     // Basic validation (client-side only)
@@ -16,11 +17,22 @@ const LoginForm = ({ onSwitchToRegister }) => {
       return;
     }
 
-    // Simulate successful login (No backend logic)
-    console.log("Login Successful:", { email, password });
+    try {
+      // Send login request to the backend
+      const res = await axios.post("http://localhost:9000/api/auth/login", { email, password });
+      console.log("Login response:", res.data);
 
-    // Redirect to dashboard (frontend navigation only)
-    navigate("/dashboard");
+      // Save token in localStorage
+      localStorage.setItem("token", res.data.token);
+      console.log("Token saved:", res.data.token);
+
+      // Redirect to dashboard after successful login
+      navigate("/dashboard");
+      console.log("Redirecting to dashboard...");
+    } catch (err) {
+      // Handle errors from the backend
+      setError(err.response?.data?.error || "Login failed. Please try again.");
+    }
   };
 
   return (
